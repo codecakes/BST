@@ -387,6 +387,10 @@ class btree(object):
         node_key: A numeric value."""
         return True if self.get_node(self.root_node, node_key) != None else False
     
+    def __getitem__(self, node_key):
+        return self.get_node(self.root_node, node_key) if node_key in self else None
+        
+    
     def find_min_key(self, start_node):
         """Find minimum key value from given node and below"""
         root_node = start_node
@@ -803,15 +807,6 @@ class AvlTree(btree):
 
 #for quick testing purposes
 if __name__ == "__main__":
-    from numpy.random import randint
-    
-    def gen_unique_num(r):
-        t = []
-        for _ in xrange(r):
-            a = randint(1, 1000000000)
-            if a not in t:
-                t.append(a)
-        return t
     
     atree = AvlTree(80, 'FlightA')
     
