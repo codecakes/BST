@@ -377,7 +377,7 @@ class btree(object):
                     bnode_instance = bnode_instance.right_node
                 else:
                     return None
-        return bnode_instance if node_key == bnode_instance.root_node else None
+        return bnode_instance #if node_key == bnode_instance.root_node else None
     
     def __contains__(self, node_key):
         """Returns True if the specified key exists in the Tree ele
