@@ -34,6 +34,32 @@ class bnode(object):
         self.add_right(right_node)
         self.add_parent(parent_node)
     
+    # Comparison Operators
+    def __eq__(self, other):
+        if isinstance(other, bnode):
+            return self.root_node == other.root_node
+    
+    def __le__(self, other):
+        if isinstance(other, bnode):
+            return self.root_node <= other.root_node
+    
+    def __ge__(self, other):
+        if isinstance(other, bnode):
+            return self.root_node >= other.root_node
+    
+    def __lt__(self, other):
+        if isinstance(other, bnode):
+            return self.root_node < other.root_node
+    
+    def __gt__(self, other):
+        if isinstance(other, bnode):
+            return self.root_node > other.root_node
+    
+    def __ne__(self, other):
+        if isinstance(other, bnode):
+            return self.root_node != other.root_node
+    #
+    
     def level(self, n):
         """return level of tree given number of nodes"""
         return floor(log(n, 2))
@@ -43,13 +69,13 @@ class bnode(object):
     
     def add_left(self, left_node):
         """Add to left node and point left child to the current calling node"""
-        if isinstance(left_node, bnode) and left_node.root_node <= self.root_node:
+        if isinstance(left_node, bnode) and left_node <= self:
             self.left_node = left_node
             self.left_node.add_parent(self)
     
     def add_right(self, right_node):
         """Add to right node and point right child to the current calling node"""
-        if isinstance(right_node, bnode) and right_node.root_node > self.root_node:
+        if isinstance(right_node, bnode) and right_node > self:
             self.right_node = right_node
             self.right_node.add_parent(self)
     
@@ -128,7 +154,7 @@ class bnode(object):
         target_node = self
         if isinstance(node, bnode):
             while not done:
-                if node.root_node < target_node.root_node:
+                if node < target_node:
                     if target_node.hasLeftChild():
                         #if left child node already exists
                         target_node = target_node.left_node
@@ -136,7 +162,7 @@ class bnode(object):
                         #add to left node
                         target_node.add_left(node)
                         done = 1
-                elif node.root_node > target_node.root_node:
+                elif node > target_node:
                     if target_node.hasRightChild():
                         #if right child node already exists
                         target_node = target_node.right_node
@@ -144,7 +170,7 @@ class bnode(object):
                         #add to right node
                         target_node.add_right(node)
                         done = 1
-                elif node.root_node == target_node.root_node:
+                elif node == target_node:
                     #Raise exception for duplicate keys
                     print node.root_node
                     raise Exception("Node with this key already exists")
@@ -385,7 +411,7 @@ class btree(object):
         This way keys can be searched like:
             5 in btree1.
         node_key: A numeric value."""
-        return True if self.get_node(self.root_node, node_key) != None else False
+        return True if self.get_node(self.root_node, node_key) else False
     
     def __getitem__(self, node_key):
         return self.get_node(self.root_node, node_key) if node_key in self else None
@@ -393,30 +419,25 @@ class btree(object):
     
     def find_min_key(self, start_node):
         """Find minimum key value from given node and below"""
-        root_node = start_node
-        min_key = root_node.root_node
-        min_node = root_node
-           
-        while root_node.hasLeftChild():
-            root_node = root_node.left_node
-            if min_key > root_node.root_node:
-                min_key = root_node.root_node
-                min_node = root_node
-        del min_key
-        return min_node
+        if isinstance(start_node, bnode):
+            root_node = start_node
+            min_node = root_node
+            
+            while root_node.hasLeftChild():
+                root_node = root_node.left_node
+                if min_node > root_node:
+                    min_node = root_node
+            return min_node
     
     def find_max_key(self, start_node):
         """Find maximum key value from given node and below"""
         root_node = start_node
-        max_key = root_node.root_node
         max_node = root_node
            
         while root_node.hasRightChild():
             root_node = root_node.right_node
-            if max_key < root_node.root_node:
-                max_key = root_node.root_node
+            if max_node < root_node:
                 max_node = root_node
-        del max_key
         return max_node
     # 
     
@@ -669,7 +690,7 @@ class AvlTree(btree):
                 temp.append(each_node.left_node)
             if each_node.hasRightChild():
                 temp.append(each_node.right_node)
-            done.append(each_node.root_node)
+            done.append(each_node.root_node)  #debug purpose
             #print "temp list {}".format([i.root_node for i in temp])
         print "REBALANCE ENDS"
         return
@@ -779,7 +800,7 @@ class AvlTree(btree):
     def AvlInsertBatch(self, batch):
         """Insert in batch only node_keys without their values"""
         #[self.AvlInsert(node_key) for node_key in batch]
-        map(self.AvlInsert, batch)
+        [self.AvlInsert(x) for x in batch if x not in self]
     
     def _AvlAddChild(self, node):
         """
@@ -807,6 +828,8 @@ class AvlTree(btree):
 
 #for quick testing purposes
 if __name__ == "__main__":
+    from numpy.lib.arraysetops import unique
+    from numpy.random import randint
     
     atree = AvlTree(80, 'FlightA')
     
@@ -844,3 +867,6 @@ if __name__ == "__main__":
     dt = AvlTree(80)
     dt.AvlInsert(101)
     dt.AvlInsert(90)
+    
+    #ntree = AvlTree(30)
+    #ntree.AvlInsertBatch(list(unique(randint(1,30000, 20))))
